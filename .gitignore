@@ -1,4 +1,8 @@
+# Only Python sources files
 *.py[cod]
+
+# No backup files
+*~
 
 # C extensions
 *.so
