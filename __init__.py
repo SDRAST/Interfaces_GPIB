@@ -23,8 +23,6 @@ This only works for 32-bit architecture and needs the following files installed
 
 import pysicl
 
-from devices import synth
-
 def ask(device, request):
     """
     Send 'request' to 'device' and obtain 'response'.
