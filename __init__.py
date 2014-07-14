@@ -61,6 +61,102 @@ def find_devices(controller):
                 print addr,":",status
     pysicl.gpib_timeout(10000)
     
+#============================= Python Gpib Emulation ==========================
 
+class Gpib:
+  """
+  Gleaned from various posts and online sources. There doesn't seem to be a
+  reference for this API.
+  
+  The ibXXX commands are not traditional NI functions.
+  
+  The Linux Gpib package uses a file /etc/gpib.conf that has entries like::
+    interface {
+      minor = 0
+      board_type = "ni_usb_b"
+      name = "joe"
+      pad = 0
+      master = yes
+  }
+  """
+  
+  def __init__(self, name='gpib0'):
+    pass
 
+  def clear(self):
+    """
+    Clear device.
+    """
+    pass
+
+  def ibcnt(self):
+    """
+    Get the actual length read.
     
+    In traditional NI functions, this is global variable that stores the number
+    of bytes read back or sent out by the most recent ibrd or ibwrt.
+    """
+    pass
+
+  def ibsta(self):
+    """
+    Get status
+    """
+    pass
+
+  def read(self, len=512):
+    """
+    read data bytes
+    """
+    pass
+
+  def readbin(self, len=512):
+    """
+    readbin() automatically returns the proper length (equal to ibcnt).
+    """
+    pass
+
+  def ren(self, val):
+    """
+    set remote enable
+    """
+    pass
+
+  def rsp(self):
+    """
+    Returns the serial poll byte from the instrument trigger()
+    """
+    pass
+
+  def tmo(self, value):
+    """
+    adjust I/O timeout
+    """
+    pass
+  
+  def trigger(self):
+    """
+    trigger device
+    """
+    pass
+  
+  def wait(self, mask):
+    """
+    wait for event
+    """
+    pass
+  
+  def write(self, str):
+    """
+    write data bytes
+    """
+    pass
+
+  def writebin(self, str, len):
+    pass
+  
+RQS = 2048
+SRQ = 4096
+TIMO = 16384
+error = 'gpib.error'
+
