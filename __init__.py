@@ -21,7 +21,7 @@ This only works for 32-bit architecture and needs the following files installed
 /usr/lib/libsicl.so
 """
 
-import pysicl
+import gpib_ct as pysicl
 
 def ask(device, request):
     """
@@ -78,10 +78,17 @@ class Gpib:
       pad = 0
       master = yes
   }
+  However, this is taken care of in /etc/opt/sicl/hwconfig.cf.
   """
   
-  def __init__(self, name='gpib0'):
-    pass
+  def __init__(self, name=None):
+    """
+    """
+    if name:
+      self.instrument = pysicl.gpib_open(name)
+    else:
+      raise RuntimeError, "instrument name required"
+    self.count = 0
 
   def clear(self):
     """
@@ -96,64 +103,90 @@ class Gpib:
     In traditional NI functions, this is global variable that stores the number
     of bytes read back or sent out by the most recent ibrd or ibwrt.
     """
-    pass
+    return self.count
 
   def ibsta(self):
     """
     Get status
     """
-    pass
+    try:
+      return gpib_dev_status(self.instrument)
+    except Exception, details:
+      raise RuntimeError, details
 
   def read(self, len=512):
     """
     read data bytes
     """
-    pass
+    try:
+      response = pysicl.gpib_rcv(self.instrument,10)
+      self.count = len(response)
+      return response
+    except Exception, details:
+      raise RuntimeError, details
 
   def readbin(self, len=512):
     """
     readbin() automatically returns the proper length (equal to ibcnt).
     """
-    pass
+    response = pysicl.gpib_read(self.instrument, len)
+    return response
 
   def ren(self, val):
     """
     set remote enable
     """
-    pass
+    raise RuntimeError, "ren not implemented"
 
   def rsp(self):
     """
     Returns the serial poll byte from the instrument trigger()
     """
-    pass
+    raise RuntimeError, "rsp not implemented"
 
   def tmo(self, value):
     """
     adjust I/O timeout
+
+    This affects the entire interface
     """
-    pass
+    try:
+      return pysicl.gpib_timeout(value)
+    except Exception, details:
+      raise RuntimeError, details
   
   def trigger(self):
     """
     trigger device
     """
-    pass
+    raise RuntimeError, "trigger not implemented"
   
   def wait(self, mask):
     """
     wait for event
     """
-    pass
+    raise RuntimeError, "wait not implemented"
   
-  def write(self, str):
+  def write(self, command):
     """
     write data bytes
     """
-    pass
+    try:
+      return pysicl.gpib_send(self.instrument, command)
+    except Exception, details:
+      raise RuntimeError, details
 
   def writebin(self, str, len):
-    pass
+    raise RuntimeError, "writebin not implemented"
+
+  #================================ additional commands =======================
+
+  def ask(self, command):
+    try:
+      return pysicl.gpib_prompt(self.instrument, command)
+    except Exception, details:
+      raise RuntimeError, details
+    
   
 RQS = 2048
 SRQ = 4096
