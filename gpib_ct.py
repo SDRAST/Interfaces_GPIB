@@ -65,6 +65,7 @@ write raw output data to the formatted I/O buffers.
 """
 
 import ctypes as ct
+from Electronics.Interfaces.GPIB.devices import *
 
 import logging
 module_logger = logging.getLogger(__name__)
@@ -124,7 +125,7 @@ _read.argtypes = [ct.c_int, ct.c_char_p, ct.c_ulong,
                   ct.POINTER(ct.c_int), ct.POINTER(ct.c_ulong)]
 _read.restype = ct.c_int
 
-def gpib_open(address):
+def gpib_open(name):
   """
   Start a device session.
   
@@ -138,6 +139,8 @@ def gpib_open(address):
 
   @return: int
   """
+  (devtype,devID) = name.split()
+  address = eval(devtype)[devID]['addr']
   return _open(address)
 
 def gpib_close(instrument_ID):
@@ -232,7 +235,7 @@ def gpib_rcv(instrument_ID, term_char=10, format="%t"):
   """
   response = ct.create_string_buffer('\000'*2048)
   status = _scan(instrument_ID, format, response)
-  module_logger.debug("%d values converted",status)
+  module_logger.debug("gpib_rcv: %d values converted",status)
   return response.value.strip()
 
 def gpib_read(instrument_ID, lendata):
