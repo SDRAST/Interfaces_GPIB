@@ -79,7 +79,7 @@ class Gpib:
       name = "joe"
       pad = 0
       master = yes
-  }
+    }
   """
   
   def __init__(self, name='gpib0'):
