@@ -135,52 +135,79 @@ static PyObject * DiagCommand(PyObject *self,
    return Py_BuildValue("i", gpib_diags);
 }
 
-static PyObject * SendCommand(PyObject *self,
-                PyObject *args) {
-   char                 *err_str;
-   int                  error;
-   int                  instrument;
-   long                 old_mask;
-   int                  repeat;
-   unsigned long        sent;
-   int                  status;
-   char			*command;
-
-   if (! PyArg_Parse(args, "(is#)", &instrument, &command) ) {
+static PyObject * SendCommand(PyObject *self, PyObject *args) {
+   char          *err_str;
+   int           error;
+   int           instrument;
+   long          old_mask;
+   int           repeat;
+   unsigned long sent;
+   int           status;
+   char          *command;
+   int           com_len;
+   
+   if ( gpib_diags ) {
+      printf ("gpib_send: about to parse arguments\n");
+      fflush(stdout);
+   }
+   if (! PyArg_Parse(args, "(is#)", &instrument, &command, &com_len) ) {
       return NULL;
    }
-   strcat(command,"\r\n"); /* HPIB messages need an EOL */
+   /* strcat(command,"\r\n"); HPIB messages need an EOL */
    if ( gpib_diags ) {
-      printf ("Sending %s to instrument %d\n", command, instrument);
+      printf ("gpib_send: length of received string is %d\n",
+        com_len);
+      fflush(stdout);
    }
-   old_mask = sigblock( sigmask (SIGALRM) );
-   while ( (status = ifwrite (instrument, command, strlen(command), 1, &sent))
-        == I_ERR_INTERRUPT );
-   /* The line above pre-dates signal blocking. TBHK 97/02/20 */
-   sigsetmask (old_mask);
-   if ( status ) {
+   if ( gpib_diags ) {
+      printf ("gpib_send: sending %s to instrument %d\n",
+              command, instrument);
+      fflush(stdout);
+   }
+   itimeout (instrument, timeout);
+   repeat = 1;
+   while ( repeat ) {
+      old_mask = sigblock( sigmask (SIGALRM) );
+      /* status = ifwrite (instrument, command, strlen(command), 1, &sent); */
+      status = iprintf(instrument, "%s", command);
+      sigsetmask (old_mask);
+      if ( status != 2 ) {
+        error = igeterrno ();
+        if ( error != I_ERR_INTERRUPT ) repeat = 0;
+      } else {
+        repeat = 0;
+      }
+    }
+    if ( status != 2 ) {
       err_str = igeterrstr (status);
       sprintf(err_msg,
-         "%s ifwrite to instrument %d failed: %s",
-         command, instrument, err_str);
+          "ifwrite %s to instrument %d failed: %s",
+           command, instrument, err_str);
+      fflush(stdout);
       PyErr_SetString(PyExc_Exception, err_msg);
       if (gpib_diags) {
-        printf("%s ifwrite to instrument %d failed: %s",
+        printf("%s ifwrite to instrument %d failed: %s\n",
                command, instrument, err_str);
+        fflush(stdout);
       }
       return NULL;
    } else {
-      if (gpib_diags) printf("flushing write buffer for instrument %d\n",
+      if (gpib_diags) {
+        printf("flushing write buffer for instrument %d\n",
                               instrument);
+        fflush(stdout);
+      }
       if ( status = iflush(instrument, I_BUF_WRITE) ) {
          err_str = igeterrstr (error);
          sprintf(err_msg,
             "%s iflush to instrument %d failed: %s",
             command, instrument, err_str);
+         fflush(stdout);
          PyErr_SetString(PyExc_Exception, err_msg);
          if (gpib_diags) {
             printf("%s iflush to instrument %d failed: %s\n",
                command, instrument, err_str);
+         fflush(stdout);
          }
          return NULL;
       } else {
@@ -260,15 +287,15 @@ static PyObject * RcvCommand(PyObject *self,
 
 
 static PyObject * PromptCommand(PyObject *self, PyObject *args) {
-   char 		*err_str;
-   int			error;
-   int			instrument;
-   long			old_mask;
-   int			repeat;
-   unsigned long	sent;
-   int  		status;
-   char			*command;
-   int			com_len;
+   char          *err_str;
+   int           error;
+   int           instrument;
+   long          old_mask;
+   int           repeat;
+   unsigned long sent;
+   int           status;
+   char          *command;
+   int           com_len;
 
    /* There is a bug in the library.  This should work with simply the
     * 's' format code but after the first call, that fails and using
@@ -276,11 +303,11 @@ static PyObject * PromptCommand(PyObject *self, PyObject *args) {
    if (! PyArg_Parse(args, "(is#)", &instrument, &command, &com_len) ) {
       return NULL;
    }
-   if ( gpib_diags ) {
-      printf ("gpib_prompt: length of received string is %d\n", 
-	      com_len);
-   }
    strcat(command,"\r\n"); /* HPIB messages need an EOL */
+   if ( gpib_diags ) {
+      printf ("gpib_prompt: length of received string is %d\n",
+        com_len);
+   }
    if ( gpib_diags ) {
       printf ("gpib_prompt: sending %s to instrument %d\n", 
 	      command, instrument);
