@@ -134,8 +134,8 @@ def gpib_open(name):
   >>> gpib_open(lan[158.154.1.110]:19)
   4
 
-  @param address : GPIB address of the device
-  @type  address : str
+  @param name : LAN/GPIB address of the device
+  @type  name : str
 
   @return: int
   """
@@ -242,20 +242,21 @@ def gpib_read(instrument_ID, lendata):
   """
   Read raw data from the device or interface
 
-  Implements iread(id, buf, bufsize, reason, actualcnt)
-  * buf is a pointer to the location where the block of data can
-    be stored.
-  * bufsize is an unsigned long integer containing the size, in bytes, of the
-    buffer specified in buf.
-  * reason is a pointer to an integer that contains the reason why the read
-    terminated. If the reason parameter contains a zero (0), no termination
-    reason is returned. Reasons include::
-    ** I_TERM_MAXCNT - bufsize characters read.
-    ** I_TERM_END END - indicator received on last character.
-    ** I_TERM_CHR - Termination character enabled and received.
-  * actualcnt is a pointer to an unsigned long integer. Upon exit, this
-    contains the actual number of bytes read from the device or interface.  If
-    actualcnt parameter is NULL, the number of bytes read will not be returned.
+  Implements iread(id, buf, bufsize, reason, actualcnt)::
+   * buf is a pointer to the location where the block of data can
+     be stored.
+   * bufsize is an unsigned long integer containing the size, in bytes, of the
+     buffer specified in buf.
+   * reason is a pointer to an integer that contains the reason why the read
+     terminated. If the reason parameter contains a zero (0), no termination
+     reason is returned. Reasons include::
+     ** I_TERM_MAXCNT - bufsize characters read.
+     ** I_TERM_END END - indicator received on last character.
+     ** I_TERM_CHR - Termination character enabled and received.
+   * actualcnt is a pointer to an unsigned long integer. Upon exit, this
+     contains the actual number of bytes read from the device or interface.
+     If actualcnt parameter is NULL, the number of bytes read will not be
+     returned.
   """
   data = ct.create_string_buffer('\000*16384')
   reason_p = ct.pointer(ct.c_int())
