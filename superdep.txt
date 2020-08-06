@@ -1,1 +1,0 @@
-/usr/local/lib/python2.7/DSN-Sci-packages/Electronics jpl https://github.jpl.nasa.gov/kuiper/Electronics.git
